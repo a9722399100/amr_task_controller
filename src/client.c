@@ -6,28 +6,36 @@
 #define BUFFER_SIZE 256
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("請輸入任務參數，例如：\n");
-        printf("./build/client \"REQUEST job=sample_collection; source=qc_node_3\"\n");
+    if (argc < 3) {
+        printf("使用方式：%s \"<job_description>\" <priority> [server_ip]\n", argv[0]);
+        printf("範例：%s \"REQUEST job=material_delivery; from=storage; to=station1\" 2 [192.168.x.x]\n", argv[0]);
         return 1;
     }
 
-    // 組合輸入字串
     char input[BUFFER_SIZE];
-    snprintf(input, sizeof(input), "%s", argv[1]);
+    snprintf(input, sizeof(input), "%s; priority=%s", argv[1], argv[2]);
 
-    // 建立 socket 並連接 server
+    const char* server_ip = (argc >= 4) ? argv[3] : "127.0.0.1";  // 預設為本機
+
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        perror("socket");
+        return 1;
+    }
+
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(8888);
-    inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr);
-    connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+    inet_pton(AF_INET, server_ip, &addr.sin_addr);
 
-    // 傳送任務
+    if (connect(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        perror("connect");
+        close(sock);
+        return 1;
+    }
+
     send(sock, input, strlen(input), 0);
 
-    // 接收伺服器訊息
     char buffer[BUFFER_SIZE];
     while (recv(sock, buffer, sizeof(buffer) - 1, 0) > 0) {
         buffer[strcspn(buffer, "\n")] = 0;

@@ -8,8 +8,8 @@
 
 ```
 amr_task_controller/
-├── include/            # 標頭檔（job_handler.h）
-├── src/                # 程式原始碼（main.c, job_handler.c, client.c）
+├── include/            # 標頭檔（job_handler.h, task_queue.h）
+├── src/                # 程式原始碼（main.c, job_handler.c, client.c, task_queue.c）
 ├── build/              # 編譯輸出檔案（server, client）
 ├── run_clients.sh      # 一鍵測試腳本（模擬多 client 發送任務）
 ├── Makefile            # 建構規則
@@ -37,10 +37,11 @@ make
 
 ---
 
-## ⚙️ Semaphore 設定
+## ⚙️ Semaphore 與排程設定
 
-- `cargo_sem`：最多同時 3 個任務（material_delivery, intermediate_transfer）可使用。
-- `qc_sem`：最多同時 1 個任務（sample_collection）可使用。
+- `cargo_sem`：最多同時 3 個 Cargo 任務（material_delivery, intermediate_transfer）可執行。
+- `qc_sem`：最多同時 1 個 QC 任務（sample_collection）可執行。
+- Cargo 任務額外使用 Dispatcher Thread 處理優先級佇列，確保高優先級任務先被執行。
 
 ### 任務類型對應說明
 
@@ -52,18 +53,24 @@ make
 
 ### 任務處理流程
 
-> **說明**：目前任務處理過程中使用 `sleep()` 函數模擬機器人任務執行的時間，這是一種暫時性的做法，僅用於展示 semaphore 控制排程的效果。實際應用中，可擴充為更真實的任務處理邏輯，例如：
->
-> - 整合感測器資料（如 AMR 移動位置、任務狀態回報）
-> - 模擬搬運耗時與距離依據的行為時間
-> - 使用任務狀態列舉與事件觸發機制（event-driven simulation）
->
-> 本專案目前不限制任務種類與任務數量，僅展示 semaphore 控制與併發機制，供學術或概念驗證用途。
+> **說明**：目前任務處理過程中使用 `sleep()` 模擬機器人任務耗時，並非真實動作。所有任務類型會依據其資源對應 semaphore 控制。Cargo 類型任務會依優先級排入 queue，由 Dispatcher Thread 負責依序分派處理。
+
+---
+
+## ✅ 已完成功能
+- 任務佇列優先級排程（含 Dispatcher Thread）
+- 多任務類型對應 semaphore 控制
+- 多 client 模擬測試腳本
+- 跨主機部署支援（Server 可接受來自不同實體主機的 client 連線）
 
 ---
 
 ## 📎 未來可擴充方向
-- 加入任務優先級與排程策略
-- 跨機部署支援：目前為本機端測試架構，後續可調整為支援多主機分佈式連線。
-- 容器化（Docker）：未來可將 server 與 client 包裝為獨立容器，透過 docker-compose 控制部署與測試流程。
-- 前端 UI 控制台：建立網頁前端，觀察各任務執行流程、即時資源狀態與排隊狀況。
+
+- ✅ **加入任務優先級與排程策略**：Cargo 任務已根據 `priority` 欄位排入優先級佇列處理。
+- ✅ **跨機部署支援**：目前 client 程式已可改變 IP，支援不同主機間連線。
+- ⬜ **容器化（Docker）**：將 server/client 打包成 container，方便測試與部署。
+- ⬜ **前端 UI 控制台**：實作 Web UI，即時監控任務分配、資源使用與 queue 狀態。
+
+---
+

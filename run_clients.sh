@@ -1,23 +1,15 @@
 #!/bin/bash
 
-# 七個不同任務
-task1="REQUEST job=material_delivery; from=storage_A; to=station_1"
-task2="REQUEST job=material_delivery; from=storage_B; to=station_2"
-task3="REQUEST job=intermediate_transfer; from=cell_X; to=station_Y"
-task4="REQUEST job=intermediate_transfer; from=cell_Y; to=station_Z"
-task5="REQUEST job=sample_collection; source=qc_node_1"
-task6="REQUEST job=sample_collection; source=qc_node_2"
-task7="REQUEST job=sample_collection; source=qc_node_3"
-
+# job_desc + priority 拆開為兩個參數傳入
 echo "開始發送不同任務至伺服器..."
 
-./build/client "$task1" &
-./build/client "$task2" &
-./build/client "$task3" &
-./build/client "$task4" &
-./build/client "$task5" &
-./build/client "$task6" &
-./build/client "$task7" &
+./build/client "REQUEST job=material_delivery; from=storage_A; to=station_1" 2 &
+./build/client "REQUEST job=material_delivery; from=storage_B; to=station_2" 3 &
+./build/client "REQUEST job=intermediate_transfer; from=cell_X; to=station_Y" 1 &
+./build/client "REQUEST job=intermediate_transfer; from=cell_Y; to=station_Z" 2 &
+./build/client "REQUEST job=sample_collection; source=qc_node_1" 1 &
+./build/client "REQUEST job=sample_collection; source=qc_node_2" 2 &
+./build/client "REQUEST job=sample_collection; source=qc_node_3" 3 &
 
 wait
 echo "[✓] 所有任務已執行完畢"

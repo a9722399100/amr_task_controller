@@ -1,4 +1,4 @@
-#include "job_handler.h"
+#include "../include/job_handler.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -50,7 +50,7 @@ void handle_sample_collection(int client_sock, const char* source, int client_id
     sem_post(&qc_sem);
 }
 
-void handle_job(int client_sock, const char* job_desc, int client_id) {
+void handle_job(int client_sock, const char* job_desc, int client_id, int priority) {
     char job[64], from[64], to[64], source[64];
     memset(job, 0, sizeof(job));
     memset(from, 0, sizeof(from));
