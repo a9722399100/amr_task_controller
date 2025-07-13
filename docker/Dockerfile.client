@@ -1,0 +1,16 @@
+FROM debian:bullseye
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    make \
+    netcat \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY . .
+
+RUN mkdir -p build && make build/client
+
+ENTRYPOINT ["./build/client"]
+

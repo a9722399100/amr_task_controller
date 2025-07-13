@@ -1,0 +1,22 @@
+services:
+  client1:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    stdin_open: true
+    tty: true
+  
+  client2:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    stdin_open: true
+    tty: true
+  
+  client3:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    stdin_open: true
+    tty: true
+
